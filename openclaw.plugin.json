@@ -1,0 +1,62 @@
+{
+  "id": "facebook-messenger",
+  "kind": "channel",
+  "channels": ["facebook-messenger"],
+  "name": "Facebook Messenger",
+  "description": "OpenClaw Facebook Messenger channel plugin for Meta Messenger Platform webhooks.",
+  "activation": {
+    "onStartup": false,
+    "onConfigPaths": ["channels.facebook-messenger", "channels.facebookMessenger"]
+  },
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {}
+  },
+  "channelConfigs": {
+    "facebook-messenger": {
+      "schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "enabled": { "type": "boolean" },
+          "pageAccessToken": { "type": "string" },
+          "pageId": { "type": "string" },
+          "verifyToken": { "type": "string" },
+          "appSecret": { "type": "string" },
+          "graphApiVersion": { "type": "string" },
+          "webhookPath": { "type": "string" },
+          "defaultTo": { "type": "string" },
+          "allowFrom": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "dmPolicy": {
+            "type": "string",
+            "enum": ["allowlist", "open", "pairing", "disabled"]
+          }
+        }
+      },
+      "uiHints": {
+        "pageAccessToken": {
+          "label": "Page access token",
+          "sensitive": true
+        },
+        "appSecret": {
+          "label": "Meta app secret",
+          "sensitive": true
+        },
+        "verifyToken": {
+          "label": "Webhook verify token",
+          "sensitive": true
+        },
+        "pageId": {
+          "label": "Facebook Page ID"
+        },
+        "webhookPath": {
+          "label": "Webhook path"
+        }
+      }
+    }
+  }
+}

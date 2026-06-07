@@ -1,0 +1,56 @@
+{
+  "name": "openclaw-facebook-messenger",
+  "version": "0.1.0",
+  "description": "OpenClaw Facebook Messenger channel plugin for Meta Messenger Platform webhooks.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist/",
+    "README.md",
+    "openclaw.plugin.json"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "prepack": "pnpm build"
+  },
+  "openclaw": {
+    "extensions": [
+      "./dist/index.js"
+    ],
+    "setupEntry": "./dist/setup-entry.js",
+    "channel": {
+      "id": "facebook-messenger",
+      "label": "Facebook Messenger",
+      "selectionLabel": "Facebook Messenger (Meta Messenger Platform)",
+      "detailLabel": "Facebook Page Messenger",
+      "docsLabel": "facebook-messenger",
+      "blurb": "Meta Messenger Platform webhook channel for Facebook Pages.",
+      "systemImage": "message",
+      "quickstartAllowFrom": true
+    },
+    "install": {
+      "npmSpec": "openclaw-facebook-messenger",
+      "defaultChoice": "npm",
+      "minHostVersion": ">=2026.6.1"
+    },
+    "compat": {
+      "pluginApi": ">=2026.6.1"
+    }
+  },
+  "devDependencies": {
+    "@types/node": "^25.9.2",
+    "openclaw": ">=2026.6.1",
+    "typescript": "^6.0.3"
+  },
+  "peerDependencies": {
+    "openclaw": ">=2026.6.1"
+  }
+}
