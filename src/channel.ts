@@ -212,7 +212,7 @@ export const messengerPlugin = createChatChannelPlugin<ResolvedMessengerAccount>
   outbound: messengerOutboundAdapter,
 });
 
-export function registerMessengerWebhookRoute(api: { config: OpenClawConfig; runtime?: unknown; registerHttpRoute: (params: { path: string; auth: "plugin"; handler: ReturnType<typeof createMessengerWebhookHandler>; replaceExisting?: boolean }) => void }): void {
+export function registerMessengerWebhookRoute(api: { config: OpenClawConfig; runtime?: unknown; registerHttpRoute: (params: { path: string; auth: "plugin"; handler: ReturnType<typeof createMessengerWebhookHandler>; replaceExisting?: boolean }) => void; pluginConfig?: Record<string, unknown> }): void {
   const account = resolveMessengerAccount(api.config);
   const handler = createMessengerWebhookHandler({
     cfg: api.config,
@@ -220,15 +220,22 @@ export function registerMessengerWebhookRoute(api: { config: OpenClawConfig; run
     runtime: api.runtime as Parameters<typeof createMessengerWebhookHandler>[0]["runtime"],
   });
 
-  // If webhookPort is set, bind a standalone HTTP server on that port
+  // If webhookPort is set in plugin config, bind a standalone HTTP server
   // instead of registering on the gateway's shared HTTP server.
-  if (account.webhookPort !== undefined) {
+  const webhookPort = typeof (api.pluginConfig as Record<string, unknown> | undefined)?.webhookPort === 'number'
+    ? (api.pluginConfig as Record<string, unknown>).webhookPort as number
+    : undefined;
+  const webhookHost = typeof (api.pluginConfig as Record<string, unknown> | undefined)?.webhookHost === 'string'
+    ? (api.pluginConfig as Record<string, unknown>).webhookHost as string
+    : undefined;
+
+  if (webhookPort !== undefined) {
     const server = createServer((req, res) => {
       void handler(req, res);
     });
-    const host = account.webhookHost ?? "0.0.0.0";
-    server.listen(account.webhookPort, host, () => {
-      console.log(`[facebook-messenger] standalone webhook server listening on ${host}:${account.webhookPort}`);
+    const host = webhookHost ?? "0.0.0.0";
+    server.listen(webhookPort, host, () => {
+      console.log(`[facebook-messenger] standalone webhook server listening on ${host}:${webhookPort}`);
     });
     server.on("error", (err) => {
       console.error(`[facebook-messenger] standalone webhook server error: ${String(err)}`);

@@ -14,8 +14,6 @@ type MessengerChannelSection = {
   appSecret?: string;
   graphApiVersion?: string;
   webhookPath?: string;
-  webhookPort?: number;
-  webhookHost?: string;
   defaultTo?: string;
   allowFrom?: string[];
   dmPolicy?: string;
@@ -31,8 +29,6 @@ export type ResolvedMessengerAccount = {
   appSecret?: string;
   graphApiVersion: string;
   webhookPath: string;
-  webhookPort?: number;
-  webhookHost?: string;
   defaultTo?: string;
 };
 
@@ -58,8 +54,6 @@ export function resolveMessengerAccount(cfg: OpenClawConfig): ResolvedMessengerA
   const appSecret = readString(section.appSecret);
   const graphApiVersion = readString(section.graphApiVersion) ?? DEFAULT_GRAPH_API_VERSION;
   const webhookPath = readString(section.webhookPath) ?? DEFAULT_WEBHOOK_PATH;
-  const webhookPort = typeof section.webhookPort === 'number' ? section.webhookPort : undefined;
-  const webhookHost = readString(section.webhookHost) ?? (webhookPort !== undefined ? '0.0.0.0' : undefined);
 
   return {
     accountId: DEFAULT_ACCOUNT_ID,
@@ -71,8 +65,6 @@ export function resolveMessengerAccount(cfg: OpenClawConfig): ResolvedMessengerA
     appSecret,
     graphApiVersion,
     webhookPath,
-    webhookPort,
-    webhookHost,
     defaultTo: readString(section.defaultTo),
   };
 }
@@ -129,7 +121,6 @@ export const messengerConfigAdapter = createTopLevelChannelConfigAdapter<Resolve
       verifyTokenStatus: account.verifyToken ? "available" : "missing",
       appSecretStatus: account.appSecret ? "available" : "missing",
       webhookPath: account.webhookPath,
-      webhookPort: account.webhookPort,
       graphApiVersion: account.graphApiVersion,
     };
   },
