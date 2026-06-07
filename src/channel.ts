@@ -3,6 +3,7 @@ import { defineChannelMessageAdapter, createMessageReceiptFromOutboundResults } 
 import { createPairingPrefixStripper } from "openclaw/plugin-sdk/channel-pairing";
 import type { ChannelOutboundAdapter } from "openclaw/plugin-sdk/channel-send-result";
 import type { OpenClawConfig } from "openclaw/plugin-sdk/channel-core";
+import { createServer } from "node:http";
 import { createMessengerWebhookHandler } from "./webhook.js";
 import {
   CHANNEL_ID,
@@ -213,15 +214,34 @@ export const messengerPlugin = createChatChannelPlugin<ResolvedMessengerAccount>
 
 export function registerMessengerWebhookRoute(api: { config: OpenClawConfig; runtime?: unknown; registerHttpRoute: (params: { path: string; auth: "plugin"; handler: ReturnType<typeof createMessengerWebhookHandler>; replaceExisting?: boolean }) => void }): void {
   const account = resolveMessengerAccount(api.config);
+  const handler = createMessengerWebhookHandler({
+    cfg: api.config,
+    account,
+    runtime: api.runtime as Parameters<typeof createMessengerWebhookHandler>[0]["runtime"],
+  });
+
+  // If webhookPort is set, bind a standalone HTTP server on that port
+  // instead of registering on the gateway's shared HTTP server.
+  if (account.webhookPort !== undefined) {
+    const server = createServer((req, res) => {
+      void handler(req, res);
+    });
+    const host = account.webhookHost ?? "0.0.0.0";
+    server.listen(account.webhookPort, host, () => {
+      console.log(`[facebook-messenger] standalone webhook server listening on ${host}:${account.webhookPort}`);
+    });
+    server.on("error", (err) => {
+      console.error(`[facebook-messenger] standalone webhook server error: ${String(err)}`);
+    });
+    return;
+  }
+
+  // Default: register on the gateway's main HTTP server
   api.registerHttpRoute({
     path: account.webhookPath,
     auth: "plugin",
     replaceExisting: true,
-    handler: createMessengerWebhookHandler({
-      cfg: api.config,
-      account,
-      runtime: api.runtime as Parameters<typeof createMessengerWebhookHandler>[0]["runtime"],
-    }),
+    handler,
   });
 }
 
